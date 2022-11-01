@@ -1,0 +1,28 @@
+nameSuffix: 8
+commonLabels:
+  app: ethnode8
+  app.kubernetes.io/name: ethnode8
+# These are the typical resources for a standard node
+# merge with yq eval-all 'select(fileIndex == 0) *+ select(fileIndex == 1)' target.yaml thisfile.yaml
+# the relative paths are correct for a node dir at <top>/<consensus>/nodes/node{N}
+resources:
+  - ./../../node
+  # The route file will always be node specific so its in the node{N} dir
+  - ingressroute.yaml
+# use gethsealedsecrets to generate this file. typically it is generated into
+# an environment specific location for the appropriate namespace. Eg
+# bbake gethsealedsecrets --destdir k8s/stage/nodes k8s/chain
+# resources:
+#  - secret-nodekeysealed.yaml
+
+# These are the typical components for a standard node
+# merge with yq eval-all 'select(fileIndex == 0) *+ select(fileIndex == 1)' target.yaml thisfile.yaml
+# the relative paths are correct for a node dir at <top>/<consensus>/nodes/node{N}
+components:
+  - ./../../../components/volume-config-genesis
+  - ./../../../components/apisec
+configMapGenerator:
+  - name: ethnode-cfg-
+    files:
+      - plugins.json
+      - jwt-auth.json

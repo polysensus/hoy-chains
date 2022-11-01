@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./../../base/rrr/network
+  - wild-nodes-cert.yaml
+configMapGenerator:
+  - name: ethnode-cfg
+    behavior: merge
+    envs:
+      - ./bootnodes.env
+      - ./network.env
+  - name: genesis
+    behavior: merge
+    files:
+      - ./genesis.json
+# merge with yq eval-all 'select(fileIndex == 0) *+ select(fileIndex == 1)' target.yaml thisfile.yaml
+# the relative paths are correct for a node dir at <top>/<consensus>/network
+components:
+  - ./../../components/traefik-ingressroute-tokenexchange

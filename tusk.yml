@@ -1,0 +1,133 @@
+interpreter: bash -c
+name: hoy-chains
+usage: |
+  automation for managing chains on the hoy cluster
+options:
+  launchdir:
+    usage: >
+      Don't set this option. Its a work around for a go-tusk peculiarity
+    environment: PWD
+  force:
+    usage: force operation, deleting previous materials if necessary
+    short: f
+    type: bool
+  bbake:
+    default: 'tusk -qf /home/robin/polysensus/ops/benchblock/tusk.yml'
+
+tasks:
+  chainid:
+    usage: "chainid from name"
+    args:
+      name:
+    run:
+      - command:
+          exec: |
+            set -e
+            cat <<PYEND | python3
+            lexicon = dict(a=0, j=0, s=0, b=1, k=1, t=1, c=2, l=2, u=2, d=3, m=3, v=3, e=4, n=4, w=4, f=6, o=6, x=6, g=7, p=7, y=7, h=8, q=8, z=8, i=9, r=9)
+            print(''.join([str(lexicon[ch]) for ch in "${name}"]))
+            PYEND
+
+  reseal:
+    usage: "dont"
+    args:
+      name:
+
+    run:
+      - command:
+          exec: |
+            set -ex
+            echo ${name}
+            CHAINID=$(cat <<PYEND | python3
+            lexicon = dict(a=0, j=0, s=0, b=1, k=1, t=1, c=2, l=2, u=2, d=3, m=3, v=3, e=4, n=4, w=4, f=6, o=6, x=6, g=7, p=7, y=7, h=8, q=8, z=8, i=9, r=9)
+            print(''.join([str(lexicon[ch]) for ch in "${name}"]))
+            PYEND
+            )
+            echo "CHAINID: $CHAINID"
+
+            FLUX_DESTDIR="fluxcd/${name}-$CHAINID"
+            CHAINDIR="chains/${name}-$CHAINID/k8s/chain"
+
+            BBAKE="${bbake}"
+            ${BBAKE} gethsealedsecrets --destdir=$FLUX_DESTDIR $CHAINDIR
+
+  new:
+    usage: "create a new chain"
+    options:
+      namespace-prefix:
+        default: "chain"
+        short: "p"
+      primary-domain:
+        default: "polysensus.io"
+      cluster-name:
+        default: "hoy"
+      numnodes:
+        default: 9
+        short: "n"
+      profile:
+        default: "onfigs/low-latency.yml"
+      # XXX: TODO these need to go in a profile.json
+      numcandidates:
+        default: 2
+      numendorsers:
+        default: 5
+      committeequorum:
+        default: 3
+      netrestrict:
+        # default is the pod ip (cluster) range for the hoy-dev subnet-dev-1 subnet
+        default: "10.2.16.0/20"
+
+    args:
+      name:
+    run:
+      - command:
+          exec: |
+            set -e
+            DIR=$(cd ${launchdir} && cd ${dir} && pwd)
+            echo ${name}
+            CHAINID=$(cat <<PYEND | python3
+            lexicon = dict(a=0, j=0, s=0, b=1, k=1, t=1, c=2, l=2, u=2, d=3, m=3, v=3, e=4, n=4, w=4, f=6, o=6, x=6, g=7, p=7, y=7, h=8, q=8, z=8, i=9, r=9)
+            print(''.join([str(lexicon[ch]) for ch in "${name}"]))
+            PYEND
+            )
+            echo "CHAINID: $CHAINID"
+            [ -d chains/${name}-$CHAINID ] && ! ${force} && echo "chain dir chains/${name}-$CHAINID exists, refusing to create"
+
+            DOMAIN_SYMBOL=$(echo "${primary-domain}" | tr '.' '-')
+            CHAIN_FQDN="${name}.${cluster-name}.${primary-domain}"
+            CHAIN_FQDN_SYMBOL=$(echo "$CHAIN_FQDN" | tr '.' '-')
+            SECURE_TOKEN_SERVICE_FQDN="sts.${cluster-name}.${primary-domain}"
+            NODE_PATH="chains/${name}-$CHAINID/node/exchange"
+            AUTHEX_FQDN="${cluster-name}-iam.svc.cluster.local:8401/$NODE_PATH"
+            NODE_NAMESPACE="${namespace-prefix}-${name}"
+
+            FLUX_DESTDIR="fluxcd/${name}-$CHAINID"
+            CHAINDIR="chains/${name}-$CHAINID"
+
+            BBAKE="${bbake}"
+            ${BBAKE} new -k  --pyenv $(pwd)/.local/pyenv \
+              -p ${profile} \
+              --chainid=$CHAINID \
+              --networkid=$CHAINID \
+              --node-namespace=$NODE_NAMESPACE \
+              --apisec \
+              --apisec-certname=$CHAIN_FQDN_SYMBOL \
+              --apisec-ingresshost=$CHAIN_FQDN \
+              --apisec-issuer=https://${SECURE_TOKEN_SERVICE_FQDN} \
+              --apisec-nodepath=$NODE_PATH \
+              --apisec-tokenex=$AUTHEX_FQDN \
+              --sealedsecrets-cert=https://${cluster-name}.${primary-domain}/_/sealed-secrets/v1/cert.pem \
+              --maxnodes=${numnodes} \
+              --numcandidates=${numcandidates} \
+              --numendorsers=${numendorsers} \
+              --committeequorum=${committeequorum} \
+              --netrestrict=${netrestrict} \
+                $CHAINDIR rrr
+
+            ${BBAKE} gethsealedsecrets --destdir=$FLUX_DESTDIR $CHAINDIR
+
+            # Now move the sensitive material to .local
+            for i in $(seq 0 $((${numnodes} - 1))); do
+              mkdir -p .local/$CHAINDIR/rrr/nodes/node$i
+              mv -v $CHAINDIR/rrr/nodes/node$i/key .local/$CHAINDIR/rrr/nodes/node$i
+            done

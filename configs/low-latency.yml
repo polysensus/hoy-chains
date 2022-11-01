@@ -1,0 +1,9 @@
+{
+  "numbootnodes": "2",
+  "recommit": "60000",
+  "activehorizon": "600",
+  "roundlength": "1200",
+  "intentphase": "300",
+  "confirmphase": "100"
+
+}

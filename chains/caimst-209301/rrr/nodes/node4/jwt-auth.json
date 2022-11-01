@@ -1,0 +1,14 @@
+{
+  "tokenValidation": {
+    "issuers": [
+      "https://sts.hoy.polysensus.io"
+    ],
+    "jws": {
+      "endpoint": null
+    },
+    "jwt": {
+      "authorizationField": "scope",
+      "preferIntrospection": false
+    }
+  }
+}
