@@ -11,4 +11,4 @@ configMapGenerator:
     behavior: merge
     files:
       - ./static-nodes.json
-namespace: chain-caimst
+namespace: rrr9

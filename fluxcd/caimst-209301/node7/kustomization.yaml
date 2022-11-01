@@ -1,5 +1,5 @@
 resources:
-  - ./../../../../chain209301/rrr/nodes/node0
+  - ../../../chains/caimst-209301/rrr/nodes/node7
   - ./secret-nodekeysealed.yaml
 patchesJson6902:
   - target:

@@ -3,11 +3,27 @@ version: '3'
 
 tasks:
   caimst-new:
-    desc: create (or recreate) the caimst chain. if re-creating this will RE-GENSIS and ROLL SECRETS
+    desc: create (or recreate) the caimst chain configuration
     summarry: |
       create/recreate the manifests and any terraform for the caimst chain
-
-      This WILL CAUSE RE-GENSIS and ROLL SECRETS
     cmds:
       - tusk -q new -f caimst
+
+  caimst-genesis:
+    desc: Gensis and key generation for caimst
+    cmds:
+      - tusk -q genesis caimst
+
+  caimst-fluxseal:
+    desc: 
+    cmds:
+      - tusk -q fluxseal caimst
+
+  caimst:
+    cmds:
+      - task: caimst-new
+      - task: caimst-genesis
+      - task: caimst-fluxseal
+
+
 

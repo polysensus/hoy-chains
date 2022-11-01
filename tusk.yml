@@ -14,6 +14,12 @@ options:
   bbake:
     default: 'tusk -qf /home/robin/polysensus/ops/benchblock/tusk.yml'
 
+  tuskdir:
+    private: true
+    usage: "so all tasks can refer to the directory containing this tusk file"
+    default:
+      command: echo $(pwd)
+
 tasks:
   chainid:
     usage: "chainid from name"
@@ -27,29 +33,6 @@ tasks:
             lexicon = dict(a=0, j=0, s=0, b=1, k=1, t=1, c=2, l=2, u=2, d=3, m=3, v=3, e=4, n=4, w=4, f=6, o=6, x=6, g=7, p=7, y=7, h=8, q=8, z=8, i=9, r=9)
             print(''.join([str(lexicon[ch]) for ch in "${name}"]))
             PYEND
-
-  reseal:
-    usage: "dont"
-    args:
-      name:
-
-    run:
-      - command:
-          exec: |
-            set -ex
-            echo ${name}
-            CHAINID=$(cat <<PYEND | python3
-            lexicon = dict(a=0, j=0, s=0, b=1, k=1, t=1, c=2, l=2, u=2, d=3, m=3, v=3, e=4, n=4, w=4, f=6, o=6, x=6, g=7, p=7, y=7, h=8, q=8, z=8, i=9, r=9)
-            print(''.join([str(lexicon[ch]) for ch in "${name}"]))
-            PYEND
-            )
-            echo "CHAINID: $CHAINID"
-
-            FLUX_DESTDIR="fluxcd/${name}-$CHAINID"
-            CHAINDIR="chains/${name}-$CHAINID/k8s/chain"
-
-            BBAKE="${bbake}"
-            ${BBAKE} gethsealedsecrets --destdir=$FLUX_DESTDIR $CHAINDIR
 
   new:
     usage: "create a new chain"
@@ -65,7 +48,7 @@ tasks:
         default: 9
         short: "n"
       profile:
-        default: "onfigs/low-latency.yml"
+        default: "configs/low-latency.yml"
       # XXX: TODO these need to go in a profile.json
       numcandidates:
         default: 2
@@ -84,12 +67,9 @@ tasks:
           exec: |
             set -e
             DIR=$(cd ${launchdir} && cd ${dir} && pwd)
-            echo ${name}
-            CHAINID=$(cat <<PYEND | python3
-            lexicon = dict(a=0, j=0, s=0, b=1, k=1, t=1, c=2, l=2, u=2, d=3, m=3, v=3, e=4, n=4, w=4, f=6, o=6, x=6, g=7, p=7, y=7, h=8, q=8, z=8, i=9, r=9)
-            print(''.join([str(lexicon[ch]) for ch in "${name}"]))
-            PYEND
-            )
+
+            CHAINID=$(tusk -qf ${tuskdir}/tusk.yml chainid ${name})
+
             echo "CHAINID: $CHAINID"
             [ -d chains/${name}-$CHAINID ] && ! ${force} && echo "chain dir chains/${name}-$CHAINID exists, refusing to create"
 
@@ -105,24 +85,75 @@ tasks:
             CHAINDIR="chains/${name}-$CHAINID"
 
             BBAKE="${bbake}"
-            ${BBAKE} new -k  --pyenv $(pwd)/.local/pyenv \
-              -p ${profile} \
+            # Note there is something VERY wierd abot options / args processing
+            # with tusk. The error 'task "xxx" requires exactly 2 args, got 1'
+            # meanst that one of the options is causing a mis count. *either*
+            # on needs a space replacing with an equals --foo bar -> --foo=bar
+            # OR we need a --bar=foo to become --bar foo. netrestrict requires
+            # a space. the rest all need =. this is clearly bad behaviour in
+            # tusk
+            ${BBAKE} new \
+              --netrestrict ${netrestrict} \
+              --init-only \
+              --k8s \
+              -p=${profile} \
               --chainid=$CHAINID \
               --networkid=$CHAINID \
               --node-namespace=$NODE_NAMESPACE \
+              --maxnodes=${numnodes} \
+              --numcandidates=${numcandidates} \
+              --numendorsers=${numendorsers} \
+              --committeequorum=${committeequorum} \
+              --sealedsecrets-cert=https://${cluster-name}.${primary-domain}/_/sealed-secrets/v1/cert.pem \
               --apisec \
               --apisec-certname=$CHAIN_FQDN_SYMBOL \
               --apisec-ingresshost=$CHAIN_FQDN \
               --apisec-issuer=https://${SECURE_TOKEN_SERVICE_FQDN} \
               --apisec-nodepath=$NODE_PATH \
               --apisec-tokenex=$AUTHEX_FQDN \
-              --sealedsecrets-cert=https://${cluster-name}.${primary-domain}/_/sealed-secrets/v1/cert.pem \
-              --maxnodes=${numnodes} \
-              --numcandidates=${numcandidates} \
-              --numendorsers=${numendorsers} \
-              --committeequorum=${committeequorum} \
-              --netrestrict=${netrestrict} \
+              --pyenv=$(pwd)/.local/pyenv \
                 $CHAINDIR rrr
+
+            ${BBAKE} rrr --init-only $CHAINDIR
+
+  genesis:
+    usage: "generate keys, alpha and genesis document for the initial node set"
+    args:
+      name:
+    run:
+      - command:
+          exec: |
+            set -e
+
+            BBAKE="${bbake}"
+            DIR=$(cd ${launchdir} && cd ${dir} && pwd)
+
+            CHAINID=$(tusk -qf ${tuskdir}/tusk.yml chainid ${name})
+
+            FLUX_DESTDIR="fluxcd/${name}-$CHAINID"
+            CHAINDIR="chains/${name}-$CHAINID"
+
+            for cmd in gethkeys gethstatic rrralpha rrrinit clientcfg rrropts gethk8s; do
+              ${BBAKE} ${cmd} $CHAINDIR
+              echo "Completed: $cmd"
+            done
+
+  fluxseal:
+    usage: "(re)generate bitnami sealed secrets and related kz manifests for use with gitops and flux"
+    args:
+      name:
+    run:
+      - command:
+          exec: |
+            set -e
+
+            BBAKE="${bbake}"
+            DIR=$(cd ${launchdir} && cd ${dir} && pwd)
+
+            CHAINID=$(tusk -qf ${tuskdir}/tusk.yml chainid ${name})
+
+            FLUX_DESTDIR="fluxcd/${name}-$CHAINID"
+            CHAINDIR="chains/${name}-$CHAINID"
 
             ${BBAKE} gethsealedsecrets --destdir=$FLUX_DESTDIR $CHAINDIR
 
@@ -131,3 +162,4 @@ tasks:
               mkdir -p .local/$CHAINDIR/rrr/nodes/node$i
               mv -v $CHAINDIR/rrr/nodes/node$i/key .local/$CHAINDIR/rrr/nodes/node$i
             done
+
