@@ -15,7 +15,7 @@ tasks:
       - tusk -q genesis caimst
 
   caimst-fluxseal:
-    desc: 
+    desc: seal or reseal the node secrets
     cmds:
       - tusk -q fluxseal caimst
 
