@@ -1,4 +1,4 @@
-nameSuffix: 8
+nameSuffix: "8"
 commonLabels:
   app: ethnode8
   app.kubernetes.io/name: ethnode8

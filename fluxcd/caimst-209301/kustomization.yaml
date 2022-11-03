@@ -1,6 +1,4 @@
-namespace: chains-caimst
 resources:
-  - ./namespace.yaml
   # base has network wide resources and configuration
   - ../../chains/caimst-209301/rrr/network
   - ./node0

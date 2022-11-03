@@ -133,13 +133,43 @@ tasks:
             FLUX_DESTDIR="fluxcd/${name}-$CHAINID"
             CHAINDIR="chains/${name}-$CHAINID"
 
-            for cmd in gethkeys gethstatic rrralpha rrrinit clientcfg rrropts gethk8s; do
+            for cmd in gethkeys gethstatic rrralpha rrrinit; do
+              ${BBAKE} ${cmd} $CHAINDIR
+              echo "Completed: $cmd"
+            done
+
+  hydrate:
+    usage: |
+      generate the node kubernetes manifests. this can update geth command line
+      options for the nodes and tweak the consensus parameters (for as long as
+      those are available on the cli).
+
+      This command DOES NOT change keys or genesis
+    args:
+      name:
+    run:
+      - command:
+          exec: |
+            set -e
+
+            BBAKE="${bbake}"
+            DIR=$(cd ${launchdir} && cd ${dir} && pwd)
+
+            CHAINID=$(tusk -qf ${tuskdir}/tusk.yml chainid ${name})
+
+            FLUX_DESTDIR="fluxcd/${name}-$CHAINID"
+            CHAINDIR="chains/${name}-$CHAINID"
+
+            for cmd in clientcfg rrropts gethk8s; do
               ${BBAKE} ${cmd} $CHAINDIR
               echo "Completed: $cmd"
             done
 
   fluxseal:
-    usage: "(re)generate bitnami sealed secrets and related kz manifests for use with gitops and flux"
+    usage: |
+      (re)generate bitnami sealed secrets and related kz manifests for use with gitops and flux
+
+      This DOES NOT need to be run after running hydrate
     args:
       name:
     run:

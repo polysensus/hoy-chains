@@ -14,6 +14,11 @@ tasks:
     cmds:
       - tusk -q genesis caimst
 
+  caimst-hydrate:
+    desc: Generate or update the node kubernetes manifests
+    cmds:
+      - tusk -q hydrate caimst
+
   caimst-fluxseal:
     desc: seal or reseal the node secrets
     cmds:
@@ -23,6 +28,7 @@ tasks:
     cmds:
       - task: caimst-new
       - task: caimst-genesis
+      - task: caimst-hydrate
       - task: caimst-fluxseal
 
 

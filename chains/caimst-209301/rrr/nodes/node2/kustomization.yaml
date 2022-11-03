@@ -1,4 +1,4 @@
-nameSuffix: 2
+nameSuffix: "2"
 commonLabels:
   app: ethnode2
   app.kubernetes.io/name: ethnode2
