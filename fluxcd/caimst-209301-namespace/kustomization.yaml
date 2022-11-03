@@ -1,3 +1,0 @@
-resources:
-  # base has network wide resources and configuration
-  - ./namespace.yaml
