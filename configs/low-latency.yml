@@ -1,6 +1,6 @@
 {
   "numbootnodes": "2",
-  "recommit": "60000",
+  "recommit": "60000s",
   "activehorizon": "600",
   "roundlength": "1200",
   "intentphase": "300",
