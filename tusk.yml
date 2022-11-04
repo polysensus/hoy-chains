@@ -208,27 +208,6 @@ tasks:
               mv -v $CHAINDIR/rrr/nodes/node$i/key .local/$CHAINDIR/rrr/nodes/node$i
             done
 
-  down:
-    usage: |
-      suspend flux reconciliation and take down all the nodes
-    args:
-      name:
-    run:
-      - command:
-          exec: |
-            flux suspend kustomization -n stage-iona-chain1 fluxcd-iona-chain1
-            for name in $(kubectl get -n stage-iona-chain1 statefulset -l app.kubernetes.io/part-of=ethnet -o name); do
-              kubectl delete -n stage-iona-chain1 $name
-            done
-
-  up:
-    args:
-      name:
-    run:
-      - command:
-          exec: |
-            flux resume kustomization -n stage-iona-chain1 fluxcd-iona-chain1
-
   suspend-cd:
     usage: suspend the automatic fluxcd kustomization reconciliation
     run:
