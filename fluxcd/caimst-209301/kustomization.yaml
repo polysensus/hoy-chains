@@ -1,3 +1,4 @@
+namespace: chains-caimst
 resources:
   - ./namespace.yaml
   # base has network wide resources and configuration

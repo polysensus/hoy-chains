@@ -165,6 +165,16 @@ tasks:
               echo "Completed: $cmd"
             done
 
+  reconcile:
+    usage: |
+      reconcile flux source & kustomization
+    run:
+      - command:
+          exec: |
+            set -e
+            flux -n flux-system reconcile source git hoy-chains
+            flux -n flux-system reconcile kustomization hoy-chains
+
   fluxseal:
     usage: |
       (re)generate bitnami sealed secrets and related kz manifests for use with gitops and flux
