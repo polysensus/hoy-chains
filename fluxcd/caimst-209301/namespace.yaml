@@ -4,4 +4,3 @@ metadata:
   #labels:
   #  toolkit.fluxcd.io/tenant: chains-caimst
   name: chains-caimst
-

@@ -38,7 +38,7 @@ tasks:
     usage: "create a new chain"
     options:
       namespace-prefix:
-        default: "chain"
+        default: "chains"
         short: "p"
       primary-domain:
         default: "polysensus.io"
