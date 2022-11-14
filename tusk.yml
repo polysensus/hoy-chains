@@ -47,6 +47,8 @@ tasks:
         short: "p"
       primary-domain:
         default: "polysensus.io"
+      forwardauth-url:
+        default: http://auth-traefikforward.hoy-iam-dev.svc.cluster.local:8401"
       cluster-name:
         default: "hoy"
       numnodes:
@@ -83,7 +85,7 @@ tasks:
             CHAIN_FQDN_SYMBOL=$(echo "$CHAIN_FQDN" | tr '.' '-')
             SECURE_TOKEN_SERVICE_FQDN="sts.${cluster-name}.${primary-domain}"
             NODE_PATH="/chains/${name}-$CHAINID/node"
-            AUTHEX_FQDN="${cluster-name}-iam.svc.cluster.local:8401$NODE_PATH"
+            FORWARDAUTH_URL="${forwardauth-url}$NODE_PATH"
             NODE_NAMESPACE="${namespace-prefix}-${name}"
 
             FLUX_DESTDIR="fluxcd/${name}-$CHAINID"
