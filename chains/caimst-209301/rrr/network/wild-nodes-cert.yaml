@@ -23,5 +23,5 @@ spec:
     - "hoy.polysensus.io"
     - "*.hoy.polysensus.io"
   issuerRef:
-    name: letsencrypt-staging-primary-dns
+    name: letsencrypt-prod-primary-dns
     kind: ClusterIssuer
