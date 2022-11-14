@@ -79,7 +79,7 @@ tasks:
             [ -d chains/${name}-$CHAINID ] && ! ${force} && echo "chain dir chains/${name}-$CHAINID exists, refusing to create"
 
             DOMAIN_SYMBOL=$(echo "${primary-domain}" | tr '.' '-')
-            CHAIN_FQDN="${name}.${cluster-name}.${primary-domain}"
+            CHAIN_FQDN="${cluster-name}.${primary-domain}"
             CHAIN_FQDN_SYMBOL=$(echo "$CHAIN_FQDN" | tr '.' '-')
             SECURE_TOKEN_SERVICE_FQDN="sts.${cluster-name}.${primary-domain}"
             NODE_PATH="/chains/${name}-$CHAINID/node"
