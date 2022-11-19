@@ -58,10 +58,10 @@ patchesJson6902:
       kind: StatefulSet
       name: ethnode
     path: patch-json-statefulset-env-extip.yaml
-  - target:
-      kind: Service
-      name: ethnode
-    path: patch-json-service-nodeport-ports.yaml
+  #- target:
+  #    kind: Service
+  #    name: ethnode
+  #  path: patch-json-service-nodeport-ports.yaml
   - target:
       kind: StatefulSet
       name: ethnode
