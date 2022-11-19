@@ -11,3 +11,8 @@
 - op: replace
   path: /spec/ports/1/port
   value: 31213
+- op: add
+  path: /spec/type
+  value: NodePort
+- op: remove
+  path: /spec/clusterIP

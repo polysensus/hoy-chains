@@ -30,3 +30,6 @@ tasks:
       - task: caimst-genesis
       - task: caimst-hydrate
       - task: caimst-fluxseal
+  reconcile:
+    cmds:
+      - tusk -q reconcile
