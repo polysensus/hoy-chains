@@ -48,7 +48,7 @@ tasks:
       primary-domain:
         default: "polysensus.io"
       forwardauth-url:
-        default: http://auth-traefikforward.hoy-iam-dev.svc.cluster.local:8401"
+        default: http://auth-traefikforward.hoy-iam-dev.svc.cluster.local:8401
       cluster-name:
         default: "hoy"
       numnodes:
@@ -85,11 +85,16 @@ tasks:
             CHAIN_FQDN_SYMBOL=$(echo "$CHAIN_FQDN" | tr '.' '-')
             SECURE_TOKEN_SERVICE_FQDN="sts.${cluster-name}.${primary-domain}"
             NODE_PATH="/chains/${name}-$CHAINID/node"
-            FORWARDAUTH_URL="${forwardauth-url}$NODE_PATH"
+            FORWARDAUTH_URL="${forwardauth-url}$NODE_PATH/exchange"
             NODE_NAMESPACE="${namespace-prefix}-${name}"
 
             FLUX_DESTDIR="fluxcd/${name}-$CHAINID"
             CHAINDIR="chains/${name}-$CHAINID"
+
+            BOOTNODE0_IP=34.142.43.52
+            BOOTNODE0_NODEPORT=31210
+            BOOTNODE1_IP=34.142.43.52
+            BOOTNODE1_NODEPORT=31213
 
             BBAKE="${bbake}"
             # Note there is something VERY wierd abot options / args processing
@@ -113,11 +118,16 @@ tasks:
               --committeequorum=${committeequorum} \
               --sealedsecrets-cert=https://${cluster-name}.${primary-domain}/_/sealed-secrets/v1/cert.pem \
               --apisec \
-              --apisec-certname=$CHAIN_FQDN_SYMBOL \
+              --apisec-certname=wild-$CHAIN_FQDN_SYMBOL \
+              --apisec-certissuer letsencrypt-prod-primary-dns \
               --apisec-ingresshost=$CHAIN_FQDN \
               --apisec-issuer=https://${SECURE_TOKEN_SERVICE_FQDN} \
               --apisec-nodepath=$NODE_PATH \
-              --apisec-tokenex=$AUTHEX_FQDN \
+              --apisec-tokenex=$FORWARDAUTH_URL \
+              --bootnode0-ip=$BOOTNODE0_IP \
+              --bootnode0-nodeport=$BOOTNODE0_NODEPORT \
+              --bootnode1-ip=$BOOTNODE1_IP \
+              --bootnode1-nodeport=$BOOTNODE1_NODEPORT \
               --pyenv=$(pwd)/.local/pyenv \
                 $CHAINDIR rrr
 
@@ -171,6 +181,17 @@ tasks:
               ${BBAKE} ${cmd} $CHAINDIR
               echo "Completed: $cmd"
             done
+
+  resetchanges:
+    usage: |
+      Undo local (and not committed) changes to the resources
+    run:
+      - command:
+          exec: |
+            set -e
+            git checkout chains
+            git clean -fdx
+
 
   reconcile:
     usage: |
