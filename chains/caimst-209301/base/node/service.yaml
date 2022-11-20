@@ -10,6 +10,10 @@ metadata:
 spec:
   ports:
   - name: tcp-peer
+    protocol: TCP
+    port: 7200
+  - name: udp-peer
+    protocol: UDP
     port: 7200
   - name: tcp-rpc
     port: 8300

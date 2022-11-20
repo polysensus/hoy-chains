@@ -4,7 +4,7 @@ version: '3'
 tasks:
   caimst-new:
     desc: create (or recreate) the caimst chain configuration
-    summarry: |
+    summary: |
       create/recreate the manifests and any terraform for the caimst chain
     cmds:
       - tusk -q new -f caimst
@@ -30,6 +30,31 @@ tasks:
       - task: caimst-genesis
       - task: caimst-hydrate
       - task: caimst-fluxseal
+
+  caimst-delete:
+    desc: "delete all kubernetes resouces for caimst"
+    cmds:
+      - task: suspend-cd
+      - kustomize build fluxcd/caimst-209301 | kubectl delete -f -
+
+  caimst-apply:
+    desc: "apply the kustomize resources for caimst directly"
+    cmds:
+      - task: suspend-cd
+      - kustomize build fluxcd/caimst-209301 | kubectl apply -f -
+
+
+  suspend-cd:
+    desc: "suspend all fluxcd kustomizations"
+    cmds:
+      - tusk -q suspend-cd
+
+  resume-cd:
+    desc: "resume all fluxcd kustomizations"
+    cmds:
+      - tusk -q resume-cd
+
   reconcile:
+    desc: "force all fluxcd kustomizations to reconcile"
     cmds:
       - tusk -q reconcile
