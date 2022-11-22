@@ -2,9 +2,9 @@ nameSuffix: "3"
 commonLabels:
   app: ethnode3
   app.kubernetes.io/name: ethnode3
-  bootnode0-extip: "34.142.43.52"
+  bootnode0-extip: "34.142.43.54"
   bootnode0-nodeport: "31210"
-  bootnode1-extip: "34.142.43.52"
+  bootnode1-extip: "34.142.43.54"
   bootnode1-nodeport: "31213"
 # These are the typical resources for a standard node
 # merge with yq eval-all 'select(fileIndex == 0) *+ select(fileIndex == 1)' target.yaml thisfile.yaml

@@ -3,11 +3,11 @@ commonLabels:
   app: ethnode1
   app.kubernetes.io/name: ethnode1
   bootnode: "1"
-  bootnode0-extip: "34.142.43.52"
+  bootnode0-extip: "34.142.43.54"
   bootnode0-nodeport: "31210"
-  bootnode1-extip: "34.142.43.52"
+  bootnode1-extip: "34.142.43.54"
   bootnode1-nodeport: "31213"
-  extip: "34.142.43.52"
+  extip: "34.142.43.54"
   nodeport: "31213"
 # These are the typical resources for a standard node
 # merge with yq eval-all 'select(fileIndex == 0) *+ select(fileIndex == 1)' target.yaml thisfile.yaml

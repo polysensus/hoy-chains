@@ -91,9 +91,9 @@ tasks:
             FLUX_DESTDIR="fluxcd/${name}-$CHAINID"
             CHAINDIR="chains/${name}-$CHAINID"
 
-            BOOTNODE0_IP=34.142.43.52
+            BOOTNODE0_IP=34.142.43.54
             BOOTNODE0_NODEPORT=31210
-            BOOTNODE1_IP=34.142.43.52
+            BOOTNODE1_IP=34.142.43.54
             BOOTNODE1_NODEPORT=31213
 
             BBAKE="${bbake}"
