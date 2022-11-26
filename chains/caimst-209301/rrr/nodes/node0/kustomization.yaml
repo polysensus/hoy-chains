@@ -30,6 +30,10 @@ patchesJson6902:
       kind: StatefulSet
       name: ethnode
     path: patch-json-statefulset-env-p2p-port.yaml
+  #- target:
+  #    kind: StatefulSet
+  #    name: ethnode
+  #  path: patch-json-statefulset-env-bootnode-which.yaml
   - target:
       kind: StatefulSet
       name: ethnode

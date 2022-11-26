@@ -134,6 +134,10 @@ spec:
             done
             apt-get install -y netcat
 
+            # Note: setting --nat=extip:SOME-IP tells geth that no port mapping
+            # or nat is required. Geth assumes that it is reachable on the
+            # configured ports and ip and doesn't do any clevers. Which is what
+            # we want as we completely control the network environment
             if [ -n "${EXTIP}" ]; then
               # if we want to permit external peers we should set the external
               # ip. Othwerwise set the lan ip as that lets the bootnodes connect to each other.
@@ -141,8 +145,6 @@ spec:
               # with the consequence that the bootnodes don't connect to each
               # other
               export NAT_OPTS="--nat=extip:${EXTIP}"
-              #export NAT_OPTS="--nat=extip:${POD_IP}"
-              #export NAT_OPTS="--nat=none"
             else
               export NAT_OPTS="--nat=extip:${POD_IP}"
             fi
@@ -159,17 +161,24 @@ spec:
                 fi
 
                 HOSTNAME=$(hostname -f)
-                if [ -n "${EXTIP}" ]; then
+                if [ -z "${EXTIP}" ]; then
                 while true; do
-                  [ -n "${BOOTNODE0_EXTIP}" ] && nc -vzu ${BOOTNODE0_EXTIP} ${BOOTNODE0_NODEPORT} && break
-                  [ -n "${BOOTNODE1_EXTIP}" ] && nc -vzu ${BOOTNODE1_EXTIP} ${BOOTNODE1_NODEPORT} && break
+                  [ -n "${BOOTNODE0_EXTIP}" ] && nc -vz ${BOOTNODE0_EXTIP} ${BOOTNODE0_NODEPORT} && break
+                  [ -n "${BOOTNODE1_EXTIP}" ] && nc -vz ${BOOTNODE1_EXTIP} ${BOOTNODE1_NODEPORT} && break
                   echo "waiting for a bootnode to be available ..."
                   sleep 1
                 done
                 fi
 
-                DISCOVERY_OPTS="--netrestrict=${BOOTNODE0_EXTIP}/32,${BOOTNODE1_EXTIP}/32,${POD_IP}/16 --bootnodes=${BOOTNODES}"
-                DISCOVERY_OPTS="--bootnodes=${BOOTNODES}"
+                #DISCOVERY_OPTS="--netrestrict=${BOOTNODE0_EXTIP}/32,${BOOTNODE1_EXTIP}/32,${POD_IP}/16 --bootnodes=${BOOTNODES}"
+                #DISCOVERY_OPTS="--bootnodes=${BOOTNODES}"
+                if [ "${BOOTNODE} == "0" ]; then
+                  DISCOVERY_OPTS="--netrestrict=${BOOTNODE1_EXTIP}/32,${POD_IP}/16,10.0.4.0/24 --bootnodes=enode://${BOOTNODE_PUB1}@${BOOTNODE1_EXTIP}:${BOOTNODE1_NODEPORT}"
+                elif [ "${BOOTNODE} == "1" ]; then
+                  DISCOVERY_OPTS="--netrestrict=${BOOTNODE0_EXTIP}/32,${POD_IP}/16,10.0.4.0/24 --bootnodes=enode://${BOOTNODE_PUB0}@${BOOTNODE0_EXTIP}:${BOOTNODE0_NODEPORT}"
+                else
+                  DISCOVERY_OPTS="--netrestrict=${BOOTNODE0_EXTIP}/32,${BOOTNODE1_EXTIP}/32,${POD_IP}/16,10.0.4.0/24 --bootnodes=${BOOTNODES}"
+                fi
             else
               # quorum resolves the bootnode dns names once on startup
               if [ -n "$BOOTNODE_PUB0" ]; then
