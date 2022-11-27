@@ -9,5 +9,5 @@ spec:
     - "hoy.polysensus.io"
     - "*.hoy.polysensus.io"
   issuerRef:
-    name: letsencrypt-prod-primary-dns
+    name: letsencrypt-stage-primary-dns
     kind: ClusterIssuer
