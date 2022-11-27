@@ -1,13 +1,13 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: caimst-hoy-polysensus-io
+  name: chains-hoy-polysensus-io
 spec:
-  commonName: "caimst.hoy.polysensus.io"
-  secretName: caimst-hoy-polysensus-io
+  commonName: "chains.hoy.polysensus.io"
+  secretName: chains-hoy-polysensus-io
   dnsNames:
-    - "caimst.hoy.polysensus.io"
-    - "*.caimst.hoy.polysensus.io"
+    - "chains.hoy.polysensus.io"
+    - "*.chains.hoy.polysensus.io"
   issuerRef:
     name: letsencrypt-staging-primary-dns
     kind: ClusterIssuer

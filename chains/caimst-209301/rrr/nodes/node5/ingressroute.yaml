@@ -15,7 +15,7 @@ spec:
   routes:
     # traefik-route will be yq replaced to something like
     # Host(`blockbench.io`) && Path(`/node/ethnode0`)
-    - match: Host(`hoy.polysensus.io`) && PathPrefix(`/chains/caimst-209301/node/ethnode5`)
+    - match: Host(`chains.hoy.polysensus.io`) && PathPrefix(`/chains/caimst-209301/node/ethnode5`)
       kind: Rule
       services:
         - kind: Service
@@ -26,4 +26,4 @@ spec:
         - name: ethnodetokenexchange
         - name: removepath
   tls:
-    secretName: caimst-hoy-polysensus-io
+    secretName: chains-hoy-polysensus-io
