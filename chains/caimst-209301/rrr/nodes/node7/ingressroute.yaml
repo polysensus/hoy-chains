@@ -26,4 +26,4 @@ spec:
         - name: ethnodetokenexchange
         - name: removepath
   tls:
-    secretName: wild-hoy-polysensus-io
+    secretName: caimst-hoy-polysensus-io
