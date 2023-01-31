@@ -20,6 +20,10 @@ options:
     default:
       command: echo $(pwd)
 
+  context:
+    private: true
+    default: "hoy-1"
+
   namespace-prefix:
     private: true # hide for now
     default: "chains-"
@@ -181,6 +185,43 @@ tasks:
               ${BBAKE} ${cmd} $CHAINDIR
               echo "Completed: $cmd"
             done
+
+  nodekey:
+    usage: |
+      get the node private key directly from the cluster
+    options:
+      node:
+        short: "n"
+        default: 0
+    args:
+      name:
+
+    run:
+      - command:
+          exec: |
+            set -e
+            NAMESPACE=${namespace-prefix}${name}
+            CONTEXT=${context}
+            kubectl get secret --context ${CONTEXT} --namespace $NAMESPACE \
+              ethnodekey-${node} -o json \
+              | jq -r .data.key | base64 -d
+
+  nodewallet:
+    usage: |
+      get the node wallet directly from the cluster, requries forgers & cast installed
+
+    run:
+      - command:
+          exec: |
+            set -e
+            NAMESPACE=${namespace-prefix}${name}
+            CONTEXT=${context}
+            PRIVATE_KEY=$(kubectl get secret --context $CONTEXT --namespace $NAMESPACE \
+              ethnodekey-0 -o json \
+              | jq -r .data.key | base64 -d)
+
+            cast wallet address --private-key $PRIVATE_KEY | cut -d ' ' -f2
+
 
   resetchanges:
     usage: |
